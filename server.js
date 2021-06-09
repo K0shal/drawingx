@@ -1,8 +1,10 @@
 const express = require("express");
+const path = require('path');
 const PORT = process.env.PORT || 8000;
+const staticPath = path.join(__dirname, "public");
 const INDEX = '/index.html';
 const server = express()
-    .use((req, res) => res.sendFile(INDEX, { root: __dirname }))
+    .use(express.static(staticPath))
     .listen(PORT, () => console.log(`Listening on http://localhost:${PORT}`));
 const io = require('socket.io')(server, {
     cors: {
@@ -10,21 +12,18 @@ const io = require('socket.io')(server, {
     },
 });
 
-
+// var color = ["blue", "red", "green", "yellow", "pink", "orange"];
 
 io.on('connection', socket => {
+
     var Room = "";
-    socket.emit('id', socket.id);
     socket.on("room", (room) => {
         socket.join(`${room}`);
         console.log(room);
         Room = room;
     });
-    // console.log(socket.id);
-    // io.emit('snake', socket.id);
     socket.on('mousePosition', (mouse) => {
         console.log(mouse.x, mouse.y);
-
         io.to(`${Room}`).emit('mousePositions', mouse, socket.id);
     });
 
